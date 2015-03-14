@@ -1,0 +1,164 @@
+﻿@model UniversityManagementSystem.Models.CourseAssign
+
+@{
+    ViewBag.Title = "Create";
+
+    //var RemainingTaken1 = ViewBag.RemainingTaken;
+    //var AssignTaken1 = ViewBag.AssignTaken;
+    
+     
+  
+}
+
+<h2>Create</h2>
+
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>CourseAssign</h4>
+        <hr />
+        @Html.ValidationSummary(true)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DepartmentId, "DepartmentId", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("DepartmentId", String.Empty)
+                @Html.ValidationMessageFor(model => model.DepartmentId)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TeacherId, "TeacherId", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("TeacherId", String.Empty)
+                @Html.ValidationMessageFor(model => model.TeacherId)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.AssignTaken, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.AssignTaken)
+                @Html.ValidationMessageFor(model => model.AssignTaken)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.RemainingTaken, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.RemainingTaken)
+                @Html.ValidationMessageFor(model => model.RemainingTaken)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CourseId, "CourseId", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("CourseId", String.Empty)
+                @Html.ValidationMessageFor(model => model.CourseId)
+            </div>
+        </div>
+
+
+
+        <div class="form-group">
+            <label for="courseName" class="col-sm-2 control-label">Course Name</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="courseName" id="courseName">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="courseCredit" class="col-sm-2 control-label">Credit</label>
+            <div class="col-sm-10">
+                <input type="text" name="courseCredit" class="form-control" id="courseCredit">
+            </div>
+        </div>
+
+
+
+
+
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            var assignTaken = 0.0;
+            var remainingTaken = 0.0;
+            var credit = 0.0;
+            //alert("remainingTaken 1: " + remainingTaken);
+            //alert("Start");
+
+            $("#TeacherId").change(function() {
+                var optionSelected = $(this).find("option:selected");
+                var teacherId = optionSelected.val();
+                var mydata = { teacherID: teacherId };
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetInfo", "CourseAssign")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(mydata),
+                    dataType: "json",
+                    success: function(data) {
+                        assignTaken = data.AssignTaken;
+                        remainingTaken = data.RemainingTaken;
+                        //alert("assignTaken 1: " + assignTaken);
+                        //alert("remainingTaken 1: " + remainingTaken);
+                        $("#AssignTaken").val(data.AssignTaken + credit);
+                        $("#RemainingTaken").val(data.RemainingTaken - credit);
+
+                    },
+                });
+            });
+
+            $("#CourseId").change(function() {
+                var optionSelected = $(this).find("option:selected");
+                var courseId = optionSelected.val();
+                var mydata = { courseID: courseId };
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetInfo", "Course")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(mydata),
+                    dataType: "json",
+                    success: function(data) {
+                        //alert("remainingTaken 2: " + $("#RemainingTaken").val());
+                        //alert("assignTaken 2: " + $("#AssignTaken").val());
+                        //alert("credit: " + data.Credit);
+                        credit = data.Credit;
+                       
+                        if ((remainingTaken - credit) >= 0) {
+                            $("#courseName").val(data.Name);
+                            $("#courseCredit").val(data.Credit);
+                            $("#AssignTaken").val(assignTaken + credit);
+                            $("#RemainingTaken").val(remainingTaken - credit);
+                        } else {
+                            alert("Sorry,Course cann't assignd to this teacher.");
+                        }
+                    },
+                });
+            });
+        });
+    </script>
+
+}
